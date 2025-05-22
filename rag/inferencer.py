@@ -13,7 +13,7 @@ def inference(rewritten_query, docs):
     """
 
     # Thay thế bằng API Key của bạn trên Groq
-    API_KEY = "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"
+    API_KEY = ""
 
     # Chọn mô hình phù hợp
     MODEL = "deepseek-r1-distill-llama-70b" 
