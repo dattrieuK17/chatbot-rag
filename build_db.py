@@ -1,7 +1,3 @@
-# import sys
-# import os
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from utils.splitter import split_by_chuong_from_documents, split_by_muc, split_by_dieu, split_by_khoan, split_by_diem_dynamic_length
 from utils.pdf_loader import load_pdf
 from rag.retriever import create_db, create_doc_from_chunk
