@@ -2,7 +2,7 @@ from google import genai
 
 def rewrite_query(user_query):
     
-    client = genai.Client(api_key="AIzaSyBGE7LRaR8ugSSI5EtvBI87z9roTUlGXmc")
+    client = genai.Client(api_key="")
     
     prompt = f"""
     Bạn là một chuyên gia pháp lý, am hiểu sâu sắc về văn bản quy phạm pháp luật.
