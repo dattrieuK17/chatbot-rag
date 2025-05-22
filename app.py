@@ -1,46 +1,45 @@
+from flask import Flask, request, jsonify, render_template
 import torch
+import warnings
+import re
 
+# Tối ưu torch nếu cần
 torch.backends.cuda.enable_flash_sdp(False)
 torch.backends.cuda.enable_math_sdp(True)
-
-import warnings
 warnings.filterwarnings("ignore")
 
+# Import RAG pipeline
 from rag.retriever import load_db, retrieve_documents
 from rag.inferencer import inference
 from rag.rewriter import rewrite_query
 
-
+# Load database 1 lần khi khởi động
 db = load_db()
 
-def rag_chain(query):
-    """
-    Hàm này thực hiện quy trình RAG: viết lại truy vấn, truy xuất tài liệu và suy diễn.
-    
-    Args:
-        query (str): Câu hỏi đầu vào.
-        
-    Returns:
-        str: Câu trả lời từ mô hình.
-    """
-    # Viết lại truy vấn
-    rewritten_query = rewrite_query(query)
-    
-    # Truy xuất tài liệu
-    context_docs = retrieve_documents(db, rewritten_query, k=4)
-    
-    # Suy diễn
-    answer = inference(rewritten_query, context_docs)
-    
-    return answer
+app = Flask(__name__)
 
+# Trang giao diện chính
+@app.route("/")
+def index():
+    return render_template("app.html")
+
+# API xử lý chat
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    query = data.get("message", "").strip()
+    
+    if not query:
+        return jsonify({"reply": "Vui lòng nhập câu hỏi."}), 400
+
+    try:
+        rewritten_query = rewrite_query(query)
+        context_docs = retrieve_documents(db, rewritten_query, k=4)
+        answer = inference(rewritten_query, context_docs)
+        cleaned_answer = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
+        return jsonify({"reply": cleaned_answer})
+    except Exception as e:
+        return jsonify({"reply": f"Đã xảy ra lỗi: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    # Ví dụ câu hỏi
-    query = input("Nhập câu hỏi của bạn: ")
-    
-    # Thực hiện quy trình RAG
-    answer = rag_chain(query)
-    
-    print("Câu hỏi:", query)
-    print("Câu trả lời:", answer)
+    app.run(debug=True)
